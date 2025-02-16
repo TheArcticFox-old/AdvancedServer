@@ -97,6 +97,7 @@ Component* info_components[] =
 	(Component*)&(ImageCreate(0, 0, 480, 270, 0, 272, 480, 270)),
 	(Component*)&(ImageCreate(208, 10, 55, 16, 2172, 0, 55, 16)),
 	(Component*)&(LabelCreate(4, 38 + 4, info_text, 2)),
+	(Component*)&(LabelCreate(16, 164 + 4, "ABCDEFGHIJKLMNOPQRSTUVWXYZ&\nαβγδεζηθικλμνξοπρστυφχψω:\nаәбвгґеёєжзиіїйклмнопрстуўфхцчшщъыьэюя'\n", 2)),
 
 	(Component*)&(ButtonCreate(59, 249, 32, 8, main_menu, 480, 400, 32, 8)),
 	(Component*)&(ButtonCreate(150, 249, 54, 8, options_menu, 480, 408, 54, 8)),
@@ -174,7 +175,7 @@ int main(int argc, char** argv)
 
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	if (!(window = SDL_CreateWindow("DisasterServer v" STRINGIFY(BUILD_VERSION) " (Modified)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 480 * INTERFACE_SCALE, 270 * INTERFACE_SCALE, SDL_WINDOW_SHOWN)))
+	if (!(window = SDL_CreateWindow("AdvancedSer ver. " SERVER_VERSION, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 480 * INTERFACE_SCALE, 270 * INTERFACE_SCALE, SDL_WINDOW_SHOWN)))
 	{
 		char msg[1024];
 		snprintf(msg, 1024, "%s\n\nPress OK to fallback to console mode.", SDL_GetError());

@@ -78,7 +78,7 @@ bool act9wall_tick(Server* server, Entity* entity)
 		if(data->plr.flags & PLAYER_DEAD)
 			continue;
 
-		if(data->plr.pos.x >= x && data->plr.pos.y >= y && data->plr.pos.x <= wx && data->plr.pos.y <= hy)
+		if(g_config.gameplay.anticheat.zone_anticheat && data->plr.pos.x >= x && data->plr.pos.y >= y && data->plr.pos.x <= wx && data->plr.pos.y <= hy)
 		{
 			server_disconnect(server, data->peer, DR_OTHER, "Inside the wall for too long!");
 			continue;

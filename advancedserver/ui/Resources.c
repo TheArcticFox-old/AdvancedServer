@@ -4,8 +4,11 @@
 
 // Resources
 #include <ui/Spritesheet.h>
+#include <ui/Fonts.h>
 
 SDL_Texture* g_textureSheet = NULL;
+SDL_Texture* g_defFontSheet = NULL;
+SDL_Texture* g_letter0Sheet = NULL;
 SDL_Texture* texture_load(SDL_Renderer* renderer, const void* data, unsigned int length)
 {
 	SDL_RWops* rw = SDL_RWFromConstMem(data, (int)length);
@@ -21,10 +24,14 @@ SDL_Texture* texture_load(SDL_Renderer* renderer, const void* data, unsigned int
 
 bool resources_load(SDL_Renderer* renderer)
 {
-	if (!(g_textureSheet = texture_load(renderer, Spritesheet_png, Spritesheet_png_len))) 
+	if (
+	!(g_textureSheet = texture_load(renderer, Spritesheet_png, Spritesheet_png_len)) ||
+	!(g_defFontSheet = texture_load(renderer, font_png, font_png_len)) ||
+	!(g_letter0Sheet = texture_load(renderer, letter0_png, letter0_png_len))
+	) 
 	{
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "SDL ERROR", SDL_GetError(), NULL);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error (Report to dev)", "Failed to load " "g_textureSheet" "!\nPress OK to fallback to console mode.", NULL); 
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error (Report to dev)", "Failed to load Texture Sheets!\nPress OK to fallback to console mode.", NULL); 
 		return 0;
 	}
 	return true;

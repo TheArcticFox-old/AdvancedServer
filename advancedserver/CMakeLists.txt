@@ -1,5 +1,5 @@
 ﻿option(DYLIB "Builds dynamic library" OFF)
-option(BUILD_UI "Builds UI using SDL" OFF)
+option(BUILD_UI "Builds UI using SDL" ON)
 
 # Needed for packet stuff
 include(TestBigEndian)
@@ -148,7 +148,7 @@ else() # Build executable
 			else() # UNIX
 				include(FindPkgConfig)
 				PKG_SEARCH_MODULE(SDL2 REQUIRED sdl2)
-				PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.0.0)
+				PKG_SEARCH_MODULE(SDL2IMAGE REQUIRED SDL2_image>=2.8.5)
 				include_directories(${SDL2_INCLUDE_DIRS} ${SDL2IMAGE_INCLUDE_DIRS})
 			
 				add_executable(AdvancedServer 

@@ -257,7 +257,7 @@ bool peer_identity(PeerData* v, Packet* packet)
 			goto quit;
 		}
 
-        if (build_version != g_config.networking.target_version)
+        if (!g_config.pairing.versioning.disable_version_validating && build_version != g_config.pairing.versioning.target_version)
 		{
 			server_disconnect(v->server, v->peer, DR_VERMISMATCH, NULL);
 			res = false;

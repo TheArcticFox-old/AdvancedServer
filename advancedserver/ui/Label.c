@@ -3,16 +3,63 @@
 
 bool label_update(SDL_Renderer* renderer, struct _Component* component)
 {
+	//text rendering
 	Label* label = (Label*)component;
 	int x = label->x;
 	int y = label->y;
+	//texture indexing and font properties
+	int font_gap = 1;
+	int width = 6;
+	int height = 6;
+	int offset = (width + font_gap);
+	int pos_x = 0;
+	int pos_y = 0;
+
 	SDL_Color clr = COLOR_WHITE;
 
 	for (int i = 0; i < utf8_strlen(label->text); i++)
 	{
 		utf8_char c = utf8_tolower(utf8_get(label->text, i));
-		
+
 		int ind;
+
+		if (c >= 'a' && c <= 'z') {
+			pos_x = (c - 97) * offset;
+			pos_y = 0;
+			/*if (c >= 'j' && c <= 'm') {
+				pos_x--;
+			}*/
+			switch (c)
+			{
+			case 'j':
+			case 'k':
+			case 'l':
+			case 'm':
+				pos_x--;
+				break;
+			}
+		}
+		else if (c >= 0x03B1 && c <= 0x03C9) {
+			height = 9;
+			pos_x = (c - 0x03B1) * offset;
+			pos_y = 9;
+		}
+		else if (c >= 0x0430 && c <= 0x044F) {
+			height = 9;
+			pos_x = (c - 0x0430) * offset;
+			pos_y = 18;
+			/*if (c >= 0x0434) {
+				pos_x += offset;
+			}*/
+		}
+		else if (c >= '0' && c <= '9') {
+			pos_x = (c - '0') * (width + font_gap);
+			pos_y = 27;
+		} else {
+			pos_x = 92;
+			pos_y = 36;
+		}
+
 		switch (c)
 		{
 		case '\n':
@@ -27,6 +74,11 @@ bool label_update(SDL_Renderer* renderer, struct _Component* component)
 		case '	':
 			x += 10;
 			continue;
+
+		case 'm':
+			pos_x--;
+			width++;
+			break;
 
 		case '-':
 		case '_':
@@ -141,45 +193,16 @@ bool label_update(SDL_Renderer* renderer, struct _Component* component)
 		case 0x2116:
 			clr = COLOR_ORG;
 			continue;
-
-		default:
-			if(c >= 'a' && c <= 'z')
-				ind = c - 97;
-			else if(c >= 0x0430 && c <= 0x044F)
-				ind = c - 0x0430 + 45;
-			else
-				ind = 44;
-			break;
 		}
 
-		SDL_SetTextureColorMod(g_textureSheet, clr.r, clr.g, clr.b);
-		SDL_Rect src = (SDL_Rect){ 480 + ind * 8, 432, 8, 6 };
-		SDL_Rect dst = (SDL_Rect){ x * label->scale, y * label->scale, 8 * label->scale, 6 * label->scale };
-		SDL_RenderCopy(renderer, g_textureSheet, &src, &dst);
-		x += 6;
+		SDL_SetTextureColorMod(g_letter0Sheet, clr.r, clr.g, clr.b);
+		SDL_Rect src = (SDL_Rect){ pos_x, pos_y, width, height };
+		SDL_Rect dst = (SDL_Rect){ x * label->scale, y * label->scale, width * label->scale, height * label->scale };
+		SDL_RenderCopy(renderer, g_letter0Sheet, &src, &dst);
+		x += 8;
 
-		switch (c)
-		{
-		case 'w':
-		case 'm':
-		case 'x':
-		case 'n':
-		case 0x043C:
-		case 0x0434:
-		case 0x0438:
-		case 0x0439:
-		case 0x044E:
-		case 0x044C:
-		case 0x043B:
-		case 0x0448:
-		case 0x0449:
-		case 0x0446:
-		case 0x0436:
-			x += 2;
-			break;
-		}
 	}
 
-	SDL_SetTextureColorMod(g_textureSheet, 255, 255, 255);
+	SDL_SetTextureColorMod(g_letter0Sheet, 255, 255, 255);
 	return true;
 }

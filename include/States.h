@@ -76,4 +76,7 @@ bool	results_init			(Server* server);
 bool	results_state_tick		(Server* server);
 bool	results_state_handle	(PeerData* v, Packet* packet);
 
+int		compare					(const PeerData** plr1, const PeerData** plr2);
+int		compare2				(const PeerData** plr1, const PeerData** plr2);
+
 #endif

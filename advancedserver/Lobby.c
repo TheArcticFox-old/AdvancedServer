@@ -440,7 +440,8 @@ bool lobby_state_handle(PeerData* v, Packet* packet)
 					server_broadcast_msg(v->server, 0, "-----------------------");
 					server_broadcast_msg(v->server, 0, buffer);
 					server_broadcast_msg(v->server, 0, "type " CLRCODE_GRN ".yes~ or ignore");
-					server_broadcast_msg(v->server, 0, "results will be summarized in " CLRCODE_GRA "20~ sec");
+					snprintf(buffer, 356, "results will be summarized in " CLRCODE_GRA "%d~ sec", g_config.lobby_misc.votekick_cooldown);
+					server_broadcast_msg(v->server, 0, buffer);
 					server_broadcast_msg(v->server, 0, "-----------------------");
 
 					vote_add(&v->server->lobby.vote, v->id);
@@ -601,7 +602,8 @@ bool lobby_state_handle(PeerData* v, Packet* packet)
 					server_broadcast_msg(v->server, 0, "-----------------------");
 					server_broadcast_msg(v->server, 0, buffer);
 					server_broadcast_msg(v->server, 0, "type " CLRCODE_GRN ".yes~ or ignore");
-					server_broadcast_msg(v->server, 0, "results will be summarized in " CLRCODE_GRA "20~ sec");
+					snprintf(buffer, 356, "results will be summarized in " CLRCODE_GRA "%d~ sec", g_config.lobby_misc.votekick_cooldown);
+					server_broadcast_msg(v->server, 0, buffer);
 					server_broadcast_msg(v->server, 0, "-----------------------");
 
 					vote_add(&v->server->lobby.vote, v->id);

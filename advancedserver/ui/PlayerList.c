@@ -236,7 +236,7 @@ bool playerlist_op_update(SDL_Renderer* renderer, struct _Component* component)
             else
             {
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                label.text = cJSON_GetStringValue(op);
+                label.text = cJSON_GetStringValue(cJSON_GetArrayItem(op, 1));
                 label.update(renderer, (Component*)&label);
             }
 

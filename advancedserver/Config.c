@@ -17,14 +17,17 @@
 Config g_config = {
     .networking = {
         .port = 8606,
-        .server_count = 1,
-        .target_version = 1101
+        .server_count = 1
     },
     .pairing = {
         .maximum_players_per_lobby = 7,
         .ip_validation = true,
         .ping_limit = 250,
-        .player_maximum_errors = 30000
+        .player_maximum_errors = 30000,
+        .versioning = {
+            .target_version = 1101,
+            .disable_version_validating = false
+        }
     },
     .logging = {
         .log_debug = false,
@@ -188,6 +191,11 @@ Config g_config = {
             .distance_anticheat = true,
             .ability_anticheat = true
         },
+        .competitive_mode = {
+            .enable = false,
+            .eliminate_count = 0,
+            .campers_are_first = false
+        },
         .banana = {
             .disable_timer = false,
             .singleplayer = false
@@ -200,9 +208,6 @@ Config g_config = {
         .enabled = true,
         .timer = 15,
         .pride = true
-    },
-    .user_interface = {
-        .enabled = false,
     },
     .other = {
         .ignore_inadequate_configuration = false,
@@ -222,7 +227,9 @@ bool config_verify(void)
     g_config.gameplay.entities_misc.map_specific.ravine_mist.shards.required_for_exit
     || g_config.gameplay.entities_misc.map_specific.ravine_mist.slugs.ring_chance +
     g_config.gameplay.entities_misc.map_specific.ravine_mist.slugs.red_ring_chance > 100
-    || g_config.lobby_misc.lobby_ready_required_percentage > 100)
+    || g_config.lobby_misc.lobby_ready_required_percentage > 100
+    || g_config.gameplay.competitive_mode.eliminate_count > g_config.pairing.maximum_players_per_lobby
+        )
         return false;
 
     return true;
@@ -247,8 +254,8 @@ bool config_init(void)
 		}
 	}
 
-    char buffer[4096] = { 0 };
-    size_t len = fread(buffer, 1, 4096, file);
+    char buffer[5000] = { 0 };
+    size_t len = fread(buffer, 1, 5000, file);
 	fclose(file);
 
 	cJSON* json = cJSON_ParseWithLength(buffer, len);
@@ -264,7 +271,6 @@ bool config_init(void)
     {
         g_config.networking.port = cJSON_GetObjectItem(networking, "port")->valueint;
         g_config.networking.server_count = cJSON_GetObjectItem(networking, "server_count")->valueint;
-        g_config.networking.target_version = cJSON_GetObjectItem(networking, "target_version")->valueint;
     }
 
     cJSON* pairing = cJSON_GetObjectItem(json, "pairing");
@@ -273,6 +279,11 @@ bool config_init(void)
         g_config.pairing.ip_validation = cJSON_IsTrue(cJSON_GetObjectItem(pairing, "ip_validation"));
         g_config.pairing.ping_limit = cJSON_GetObjectItem(pairing, "ping_limit")->valueint;
         g_config.pairing.player_maximum_errors = cJSON_GetObjectItem(pairing, "player_maximum_errors")->valueint;
+        cJSON* versioning = cJSON_GetObjectItem(pairing, "versioning");
+        {
+            g_config.pairing.versioning.target_version = cJSON_GetObjectItem(versioning, "target_version")->valueint;
+            g_config.pairing.versioning.disable_version_validating = cJSON_IsTrue(cJSON_GetObjectItem(versioning, "disable_version_validating"));
+        }
     }
 
     cJSON* logging = cJSON_GetObjectItem(json, "logging");
@@ -343,6 +354,13 @@ bool config_init(void)
             g_config.gameplay.anticheat.zone_anticheat = cJSON_IsTrue(cJSON_GetObjectItem(anticheat, "zone_anticheat"));
             g_config.gameplay.anticheat.distance_anticheat = cJSON_IsTrue(cJSON_GetObjectItem(anticheat, "distance_anticheat"));
             g_config.gameplay.anticheat.ability_anticheat = cJSON_IsTrue(cJSON_GetObjectItem(anticheat, "ability_anticheat"));
+        }
+
+        cJSON* competitive_mode = cJSON_GetObjectItem(gameplay, "competitive_mode");
+        {
+            g_config.gameplay.competitive_mode.enable = cJSON_IsTrue(cJSON_GetObjectItem(competitive_mode, "enable"));
+            g_config.gameplay.competitive_mode.eliminate_count = cJSON_GetObjectItem(competitive_mode, "eliminate_count")->valueint;
+            g_config.gameplay.competitive_mode.campers_are_first = cJSON_IsTrue(cJSON_GetObjectItem(competitive_mode, "campers_are_first"));
         }
 
         cJSON* banana = cJSON_GetObjectItem(gameplay, "banana");
@@ -505,11 +523,6 @@ bool config_init(void)
         g_config.results_misc.pride = cJSON_IsTrue(cJSON_GetObjectItem(results_misc, "pride"));
     }
 
-    cJSON* user_interface = cJSON_GetObjectItem(json, "user_interface");
-    {
-        g_config.user_interface.enabled = cJSON_IsTrue(cJSON_GetObjectItem(user_interface, "enabled"));
-    }
-
     cJSON* other = cJSON_GetObjectItem(json, "other");
     {
         g_config.other.ignore_inadequate_configuration = cJSON_IsTrue(cJSON_GetObjectItem(other, "ignore_inadequate_configuration"));
@@ -534,7 +547,6 @@ bool config_save(void)
         {
             cJSON_AddNumberToObject(networking, "port", g_config.networking.port);
             cJSON_AddNumberToObject(networking, "server_count", g_config.networking.server_count);
-            cJSON_AddNumberToObject(networking, "target_version", g_config.networking.target_version);
         }
         cJSON_AddItemToObject(json, "networking", networking);
 
@@ -544,6 +556,12 @@ bool config_save(void)
             cJSON_AddBoolToObject(pairing, "ip_validation", g_config.pairing.ip_validation);
             cJSON_AddNumberToObject(pairing, "ping_limit", g_config.pairing.ping_limit);
             cJSON_AddNumberToObject(pairing, "player_maximum_errors", g_config.pairing.player_maximum_errors);
+            cJSON* versioning = cJSON_CreateObject();
+            {
+                cJSON_AddNumberToObject(versioning, "target_version", g_config.pairing.versioning.target_version);
+                cJSON_AddBoolToObject(versioning, "disable_version_validating", g_config.pairing.versioning.disable_version_validating);
+            }
+            cJSON_AddItemToObject(pairing, "versioning", versioning);
         }
         cJSON_AddItemToObject(json, "pairing", pairing);
 
@@ -622,6 +640,14 @@ bool config_save(void)
                 cJSON_AddBoolToObject(anticheat, "ability_anticheat", g_config.gameplay.anticheat.ability_anticheat);
             }
             cJSON_AddItemToObject(gameplay, "anticheat", anticheat);
+
+            cJSON* competitive_mode = cJSON_CreateObject();
+            {
+                cJSON_AddBoolToObject(competitive_mode, "enable", g_config.gameplay.competitive_mode.enable);
+                cJSON_AddNumberToObject(competitive_mode, "eliminate_count", g_config.gameplay.competitive_mode.eliminate_count);
+                cJSON_AddBoolToObject(competitive_mode, "campers_are_first", g_config.gameplay.competitive_mode.campers_are_first);
+            }
+            cJSON_AddItemToObject(gameplay, "competitive_mode", competitive_mode);
 
             cJSON* banana = cJSON_CreateObject();
             {
@@ -823,12 +849,6 @@ bool config_save(void)
             cJSON_AddBoolToObject(results_misc, "pride", g_config.results_misc.pride);
         }
         cJSON_AddItemToObject(json, "results_misc", results_misc);
-
-        cJSON* user_interface = cJSON_CreateObject();
-        {
-            cJSON_AddBoolToObject(user_interface, "enabled", g_config.user_interface.enabled);
-        }
-        cJSON_AddItemToObject(json, "user_interface", user_interface);
 
         cJSON* other = cJSON_CreateObject();
         {

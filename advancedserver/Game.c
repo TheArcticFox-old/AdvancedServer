@@ -217,8 +217,66 @@ bool game_init(int exe, int8_t map, Server* server)
 
 bool game_uninit(Server* server, bool show_results)
 {
+	if (g_config.gameplay.competitive_mode.enable) {
+
+		int eliminated = 0;
+		size_t active_players = 0;
+
+		// Count active players
+		for (size_t i = 0; i < server->peers.capacity; i++) {
+			PeerData* peer = (PeerData*)server->peers.ptr[i];
+			if (peer && peer->in_game) {
+				active_players++;
+			}
+		}
+
+		// Create an array of active players to sort
+		PeerData** sort = malloc(active_players * sizeof(PeerData*));
+		if (!sort) {
+			fprintf(stderr, "Memory allocation failed!\n");
+			return false;
+		}
+
+		size_t index = 0;
+		for (size_t i = 0; i < server->peers.capacity; i++) {
+			PeerData* peer = (PeerData*)server->peers.ptr[i];
+			if (peer && peer->in_game) {
+				sort[index++] = peer;
+			}
+		}
+
+		// Sort using the worst-player elimination logic
+		qsort(sort, active_players, sizeof(PeerData*),
+			(int (*)(const void*, const void*))compare2);
+
+		// Eliminate the worst players based on sorting
+		for (size_t i = 0; i < active_players && eliminated < g_config.gameplay.competitive_mode.eliminate_count; i++) {
+			PeerData* peer = sort[i];
+
+			// Ensure the peer is valid and not already eliminated
+			if (!peer || !peer->in_game)
+				continue;
+
+			// Apply special elimination rule for campers & brain-damaged players
+			if ((peer->plr.stats.brain_damage && (peer->plr.flags & PLAYER_ESCAPED)) ||
+				(peer->plr.stats.camp_time >= 30 * TICKSPERSEC && g_config.gameplay.competitive_mode.campers_are_first))
+			{
+				peer->in_game = false;
+				eliminated++;
+				continue;
+			}
+
+			// Standard elimination
+			peer->in_game = false;
+			eliminated++;
+		}
+
+		// Free the sorting array
+		free(sort);
+	}
+
     if (show_results && g_config.results_misc.enabled)
-		return results_init(server);
+		return g_config.gameplay.competitive_mode.enable && server_ingame(server) > 2 ? mapvote_init(server) : results_init(server);
 	else
 	{
 		for (size_t i = 0; i < server->game.entities.capacity; i++)
@@ -242,7 +300,7 @@ bool game_uninit(Server* server, bool show_results)
 		}
 		dylist_free(&server->game.left);
 
-		return lobby_init(server);
+		return g_config.gameplay.competitive_mode.enable && server_ingame(server) > 2 ? mapvote_init(server) : lobby_init(server);
 	}
 }
 

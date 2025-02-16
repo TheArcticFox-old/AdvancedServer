@@ -12,6 +12,8 @@ CLRCODE_RST "sdl2 version: " CLRCODE_PUR "%d.%d.%d\n"\
 CLRCODE_RST "sdl2_image version: " CLRCODE_PUR "%d.%d.%d\n"\
 
 extern SDL_Texture* g_textureSheet;
+extern SDL_Texture* g_defFontSheet;
+extern SDL_Texture* g_letter0Sheet;
 bool resources_load(SDL_Renderer* renderer);
 
 #endif

@@ -12,16 +12,21 @@
 struct Config;
 typedef struct
 {
-    uint16_t    port;
-    uint16_t    server_count;
-    uint16_t    target_version;
+    uint16_t            port;
+    uint16_t            server_count;
 } Networking;
 typedef struct
 {
-    uint8_t     maximum_players_per_lobby;
-    bool        ip_validation;
-    uint16_t    ping_limit;
-    uint16_t	player_maximum_errors;
+    uint16_t            target_version;
+    bool                disable_version_validating;
+} Versioning;
+typedef struct
+{
+    uint8_t             maximum_players_per_lobby;
+    bool                ip_validation;
+    uint16_t            ping_limit;
+    uint16_t	        player_maximum_errors;
+    Versioning          versioning;
 } Pairing;
 typedef struct
 {
@@ -68,6 +73,12 @@ typedef struct
     bool        disable_timer;
     bool        singleplayer;
 } Banana;
+typedef struct
+{
+    bool        enable;
+    uint8_t     eliminate_count;
+    bool        campers_are_first;
+} CompetitiveMode;
 typedef struct
 {
     bool        overhell;
@@ -288,6 +299,7 @@ typedef struct
     bool                enable_sounds;
     EntitiesMisc        entities_misc;
     Anticheat           anticheat;
+    CompetitiveMode     competitive_mode;
     Banana              banana;
     GMCycle             gmcycle;
 } Gameplay;
@@ -298,11 +310,6 @@ typedef struct
     bool                pride;
     
 } ResultsMisc;
-typedef struct
-{
-    bool                enabled;
-
-} UserInterface;
 typedef struct
 {
     bool                ignore_inadequate_configuration;
@@ -319,7 +326,6 @@ typedef struct
     CharacterSelection  character_selection;
     Gameplay            gameplay;
     ResultsMisc         results_misc;
-    UserInterface       user_interface;
     Other               other;
 } Config;
 
